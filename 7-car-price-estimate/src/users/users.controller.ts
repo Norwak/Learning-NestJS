@@ -4,36 +4,43 @@ import { UsersService } from './users.service';
 import { UpdateUserDto } from './dtos/update-user.dto';
 import { Serialize } from 'src/interceptors/serialize.interceptor';
 import { UserDto } from './dtos/user.dto';
+import { AuthService } from './auth.service';
 
 @Controller('auth')
 @Serialize(UserDto)
 export class UsersController {
   constructor(
-    public usersService: UsersService
+    private usersService: UsersService,
+    private authService: AuthService
   ) {}
 
   @Get()
-  findAllUsers(@Query('email') email: string) {
-    return this.usersService.find(email);
+  async findAllUsers(@Query('email') email: string) {
+    return await this.usersService.find(email);
   }
 
   @Get(':id')
-  findUser(@Param('id') id: string) {
-    return this.usersService.findOne(parseInt(id));
+  async findUser(@Param('id') id: string) {
+    return await this.usersService.findOne(parseInt(id));
   }
 
   @Post('signup')
-  createUser(@Body() createUserDto: CreateUserDto) {
-    return this.usersService.create(createUserDto.email, createUserDto.password);
+  async createUser(@Body() createUserDto: CreateUserDto) {
+    return await this.authService.signup(createUserDto.email, createUserDto.password);
   }
 
   @Patch(':id')
-  updateUser(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.usersService.update(parseInt(id), updateUserDto);
+  async updateUser(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
+    return await this.usersService.update(parseInt(id), updateUserDto);
   }
 
   @Delete(':id')
-  removeUser(@Param('id') id: string) {
-    return this.usersService.remove(parseInt(id));
+  async removeUser(@Param('id') id: string) {
+    return await this.usersService.remove(parseInt(id));
+  }
+
+  @Post('signin')
+  async signin(@Body() createUserDto: CreateUserDto) {
+    return await this.authService.signin(createUserDto.email, createUserDto.password);
   }
 }

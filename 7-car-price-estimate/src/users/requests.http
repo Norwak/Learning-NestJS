@@ -11,8 +11,8 @@ POST http://localhost:3000/auth/signup
 Content-Type: application/json
 
 {
-  "email": "asd2@asd.asd",
-  "password": "123456"
+  "email": "qqq@www.eee",
+  "password": "12345"
 }
 
 
@@ -27,3 +27,13 @@ Content-Type: application/json
 
 ### Delete a user
 DELETE http://localhost:3000/auth/2
+
+
+### User sign in
+POST http://localhost:3000/auth/signin
+Content-Type: application/json
+
+{
+  "email": "qqq@www.eee",
+  "password": "12345"
+}
