@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Session } from '@nestjs/common';
 import { CreateUserDto } from './dtos/create-user.dto';
 import { UsersService } from './users.service';
 import { UpdateUserDto } from './dtos/update-user.dto';
@@ -14,6 +14,11 @@ export class UsersController {
     private authService: AuthService
   ) {}
 
+  @Get('whoami')
+  async whoAmI(@Session() session: any) {
+    return await this.usersService.findOne(session.userId);
+  }
+
   @Get()
   async findAllUsers(@Query('email') email: string) {
     return await this.usersService.find(email);
@@ -25,8 +30,10 @@ export class UsersController {
   }
 
   @Post('signup')
-  async createUser(@Body() createUserDto: CreateUserDto) {
-    return await this.authService.signup(createUserDto.email, createUserDto.password);
+  async createUser(@Body() createUserDto: CreateUserDto, @Session() session: any) {
+    const user = await this.authService.signup(createUserDto.email, createUserDto.password);
+    session.userId = user.id;
+    return user;
   }
 
   @Patch(':id')
@@ -40,7 +47,14 @@ export class UsersController {
   }
 
   @Post('signin')
-  async signin(@Body() createUserDto: CreateUserDto) {
-    return await this.authService.signin(createUserDto.email, createUserDto.password);
+  async signin(@Body() createUserDto: CreateUserDto, @Session() session: any) {
+    const user = await this.authService.signin(createUserDto.email, createUserDto.password);
+    session.userId = user.id;
+    return user;
+  }
+
+  @Post('signout')
+  async signout(@Session() session: any) {
+    session.userId = null;
   }
 }
