@@ -1,10 +1,13 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Session } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Session, UseGuards } from '@nestjs/common';
 import { CreateUserDto } from './dtos/create-user.dto';
 import { UsersService } from './users.service';
 import { UpdateUserDto } from './dtos/update-user.dto';
 import { Serialize } from 'src/interceptors/serialize.interceptor';
 import { UserDto } from './dtos/user.dto';
 import { AuthService } from './auth.service';
+import { User } from './entities/user.entity';
+import { CurrentUser } from './decorators/current-user.decorator';
+import { AuthGuard } from 'src/guards/auth.guard';
 
 @Controller('auth')
 @Serialize(UserDto)
@@ -15,8 +18,9 @@ export class UsersController {
   ) {}
 
   @Get('whoami')
-  async whoAmI(@Session() session: any) {
-    return await this.usersService.findOne(session.userId);
+  @UseGuards(AuthGuard)
+  async whoAmI(@CurrentUser() user: User) {
+    return user;
   }
 
   @Get()
@@ -29,13 +33,6 @@ export class UsersController {
     return await this.usersService.findOne(parseInt(id));
   }
 
-  @Post('signup')
-  async createUser(@Body() createUserDto: CreateUserDto, @Session() session: any) {
-    const user = await this.authService.signup(createUserDto.email, createUserDto.password);
-    session.userId = user.id;
-    return user;
-  }
-
   @Patch(':id')
   async updateUser(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
     return await this.usersService.update(parseInt(id), updateUserDto);
@@ -44,6 +41,13 @@ export class UsersController {
   @Delete(':id')
   async removeUser(@Param('id') id: string) {
     return await this.usersService.remove(parseInt(id));
+  }
+
+  @Post('signup')
+  async createUser(@Body() createUserDto: CreateUserDto, @Session() session: any) {
+    const user = await this.authService.signup(createUserDto.email, createUserDto.password);
+    session.userId = user.id;
+    return user;
   }
 
   @Post('signin')
